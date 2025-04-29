@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget* centralWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(centralWidget);
 
-    auto chartView = new QtCharts::QChartView(diagram->getChart());
+    auto chartView = new QChartView(diagram->getChart());
     layout->addWidget(chartView);
     layout->addWidget(display);
 

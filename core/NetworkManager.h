@@ -2,6 +2,7 @@
 
 #include <QTcpSocket>
 #include <QObject>
+#include <QTimer>
 
 class NetworkManager : public QObject {
     Q_OBJECT

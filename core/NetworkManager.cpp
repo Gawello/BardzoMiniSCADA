@@ -32,6 +32,6 @@ void NetworkManager::readData() {
 }
 
 void NetworkManager::simulateData() {
-    double simulatedValue = static_cast<double>(qrand()) / RAND_MAX * 100.0;
+    double simulatedValue = static_cast<double>(rand()) / RAND_MAX * 100.0;
     emit newSampleReceived(simulatedValue);
 }

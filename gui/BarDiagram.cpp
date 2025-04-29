@@ -3,9 +3,9 @@
 #include <QtCharts/QBarCategoryAxis>
 
 BarDiagram::BarDiagram() {
-    chart = new QtCharts::QChart();
-    barSet = new QtCharts::QBarSet("Data");
-    series = new QtCharts::QBarSeries();
+    chart = new QChart();
+    barSet = new QBarSet("Data");
+    series = new QBarSeries();
     series->append(barSet);
     chart->addSeries(series);
     chart->createDefaultAxes();
@@ -15,7 +15,7 @@ BarDiagram::~BarDiagram() {
     delete chart;
 }
 
-QtCharts::QChart* BarDiagram::getChart() const {
+QChart* BarDiagram::getChart() const {
     return chart;
 }
 

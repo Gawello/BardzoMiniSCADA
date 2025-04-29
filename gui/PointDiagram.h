@@ -7,10 +7,10 @@ public:
     PointDiagram();
     ~PointDiagram();
 
-    QtCharts::QChart* getChart() const override;
+    QChart* getChart() const override;
     void updateData(const std::vector<double>& samples) override;
 
 private:
-    QtCharts::QChart* chart;
-    QtCharts::QScatterSeries* series;
+    QChart* chart;
+    QScatterSeries* series;
 };

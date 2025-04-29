@@ -12,17 +12,17 @@
 #include <QtCharts/QBarSeries>
 #include <vector>
 
-// QT_BEGIN_NAMESPACE
-// namespace QtCharts {
+QT_BEGIN_NAMESPACE
+namespace QtCharts {
 
 class QChartView;
 }
-// QT_END_NAMESPACE
+QT_END_NAMESPACE
 
 class Diagram {
 public:
     virtual ~Diagram() = default;
 
-    virtual QCharts::QChart* getChart() const = 0;
+    virtual QChart* getChart() const = 0;
     virtual void updateData(const std::vector<double>& samples) = 0;
 };
