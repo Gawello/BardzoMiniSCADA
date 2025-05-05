@@ -15,7 +15,7 @@ void NetworkManager::startSimulation() {
     simulationMode = true;
     simulationTimer = new QTimer(this);
     connect(simulationTimer, &QTimer::timeout, this, &NetworkManager::simulateData);
-    simulationTimer->start(100); // np. co 100 ms nowe dane
+    simulationTimer->start(100); // co 100 ms nowe dane
 }
 
 void NetworkManager::stop() {

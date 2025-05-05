@@ -33,9 +33,10 @@ public:
 
 private slots:
     void handleNewSample(double sample);
-    void addDiagram();
+    void addDiagram(const QString& type);
     void addDisplay();
     void removeElement(int index);
+    void configureElement(int index);
 
 private:
     NetworkManager* network;

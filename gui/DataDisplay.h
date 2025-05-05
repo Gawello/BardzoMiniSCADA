@@ -1,18 +1,13 @@
 #pragma once
 
-#include <QString>
-#include <QObject>
-
-class DataDisplay{
+class DataDisplay {
 public:
     virtual ~DataDisplay() = default;
 
-    virtual void setValue(double value);
-    virtual void setWarningLimits(double min, double max);
-    virtual bool isInWarningState() const;
+    virtual void setValue(double value) = 0;
+    virtual void setWarningLimits(double min, double max) = 0;
+    virtual bool isInWarningState() const = 0;
 
-protected:
-    double value = 0.0;
-    double minWarning = 0.0;
-    double maxWarning = 100.0;
+    virtual double getWarningMin() const = 0;
+    virtual double getWarningMax() const = 0;
 };

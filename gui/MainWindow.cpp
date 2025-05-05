@@ -1,5 +1,9 @@
 #include "MainWindow.h"
 #include "LineDiagram.h"
+#include "PointDiagram.h"
+#include "BarDiagram.h"
+#include "ElementConfigDialog.h"
+#include "TextDisplay.h"
 #include <QtCharts/QChartView>
 #include <QVBoxLayout>
 
@@ -13,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QWidget* centralWidget = new QWidget(this);
     layout = new QVBoxLayout(centralWidget);
+    centralWidget->setBaseSize(600, 800);
 
     setCentralWidget(centralWidget);
 
@@ -24,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(configPanel, &ConfigurationPanel::addDiagramRequested, this, &MainWindow::addDiagram);
     connect(configPanel, &ConfigurationPanel::addDisplayRequested, this, &MainWindow::addDisplay);
     connect(configPanel, &ConfigurationPanel::removeSelectedRequested, this, &MainWindow::removeElement);
+    connect(configPanel, &ConfigurationPanel::elementConfigureRequested, this, &MainWindow::configureElement);
 
     network->startSimulation();
 }
@@ -54,15 +60,28 @@ void MainWindow::handleNewSample(double sample) {
     }
 }
 
-void MainWindow::addDiagram() {
-    auto diagram = new LineDiagram();
-    auto chartView = new QChartView(diagram->getChart());
-    chartView->setMinimumHeight(200);
-    layout->addWidget(chartView);
+void MainWindow::addDiagram(const QString& type) {
+    Diagram* diagram = nullptr;
 
+    if (type == "LineDiagram") {
+        diagram = new LineDiagram();
+    } else if (type == "PointDiagram") {
+        diagram = new PointDiagram();
+    } else if (type == "BarDiagram") {
+        diagram = new BarDiagram();
+    }
+
+    if (!diagram)
+        return;
+
+    QChartView* chartView = new QChartView(diagram->getChart());
+    chartView->setMinimumHeight(200);
+
+    layout->addWidget(chartView);
     dynamicWidgets.append(chartView);
     diagrams.append(diagram);
 }
+
 
 
 void MainWindow::addDisplay() {
@@ -100,4 +119,52 @@ void MainWindow::removeElement(int index) {
     }
 }
 
+
+void MainWindow::configureElement(int index) {
+    if (index < 0 || index >= dynamicWidgets.size())
+        return;
+
+    QWidget* widget = dynamicWidgets.at(index);
+
+    ElementConfigDialog dialog(this);
+
+    // Wykresy (Diagram)
+    Diagram* diagram = qobject_cast<Diagram*>(widget);
+    if (diagram) {
+        dialog.setTitle(diagram->getChart()->title());
+        dialog.enableWarningControls(false);
+        if (dialog.exec() == QDialog::Accepted) {
+            diagram->getChart()->setTitle(dialog.getTitle());
+        }
+        return;
+    }
+
+    // Wyświetlacze (TextDisplay lub BarDisplay)
+    TextDisplay* textDisp = qobject_cast<TextDisplay*>(widget);
+    BarDisplay* barDisp = qobject_cast<BarDisplay*>(widget);
+    if (textDisp || barDisp) {
+
+        if (textDisp)
+            dialog.setWarningLimits(textDisp->getWarningMin(), textDisp->getWarningMax());
+
+        if (barDisp)
+            dialog.setWarningLimits(barDisp->getWarningMin(), barDisp->getWarningMax());
+
+        dialog.setTitle(textDisp ? textDisp->text() : barDisp->text());
+        dialog.enableWarningControls(true);
+
+        if (dialog.exec() == QDialog::Accepted) {
+            if (textDisp)
+                textDisp->setText(dialog.getTitle());
+            if (barDisp)
+                barDisp->setFormat(dialog.getTitle() + " %v");
+
+            if (textDisp)
+                textDisp->setWarningLimits(dialog.getWarningMin(), dialog.getWarningMax());
+
+            if (barDisp)
+                barDisp->setWarningLimits(dialog.getWarningMin(), dialog.getWarningMax());
+        }
+    }
+}
 

@@ -12,9 +12,10 @@ public:
     explicit ConfigurationPanel(QWidget* parent = nullptr);
 
 signals:
-    void addDiagramRequested();
+    void addDiagramRequested(const QString& type);
     void addDisplayRequested();
     void removeSelectedRequested(int index);
+    void elementConfigureRequested(int index);
 
 private slots:
     void onAddDiagram();

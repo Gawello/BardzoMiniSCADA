@@ -1,4 +1,5 @@
 #include "ConfigurationPanel.h"
+#include <QInputDialog>
 
 ConfigurationPanel::ConfigurationPanel(QWidget* parent)
     : QWidget(parent) {
@@ -19,11 +20,27 @@ ConfigurationPanel::ConfigurationPanel(QWidget* parent)
     connect(addDiagramButton, &QPushButton::clicked, this, &ConfigurationPanel::onAddDiagram);
     connect(addDisplayButton, &QPushButton::clicked, this, &ConfigurationPanel::onAddDisplay);
     connect(removeButton, &QPushButton::clicked, this, &ConfigurationPanel::onRemove);
+    connect(itemList, &QListWidget::itemDoubleClicked, [this](QListWidgetItem* item){
+        int row = itemList->row(item);
+        if (row >= 0) {
+            emit elementConfigureRequested(row);
+        }
+    });
+
 }
 
 void ConfigurationPanel::onAddDiagram() {
-    emit addDiagramRequested();
+    QStringList types = {"LineDiagram", "PointDiagram", "BarDiagram"};
+    bool ok = false;
+
+    QString type = QInputDialog::getItem(this, "Wybierz typ wykresu",
+                                         "Typ wykresu:", types, 0, false, &ok);
+
+    if (ok && !type.isEmpty()) {
+        emit addDiagramRequested(type);
+    }
 }
+
 
 void ConfigurationPanel::onAddDisplay() {
     emit addDisplayRequested();
@@ -36,3 +53,4 @@ void ConfigurationPanel::onRemove() {
         delete itemList->takeItem(currentRow);
     }
 }
+
