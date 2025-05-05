@@ -3,24 +3,29 @@
 #include <QtCharts/QChartView>
 #include <QVBoxLayout>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), network(new NetworkManager(this)), buffer(new DataBuffer(1000)),
-    logger(new DataLogger("log.txt")), processor(new DataProcessor()), display(new TextDisplay(this)) {
 
-    diagram = new LineDiagram();
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+    network(new NetworkManager(this)),
+    buffer(new DataBuffer(1000)),
+    logger(new DataLogger("log.txt")),
+    processor(new DataProcessor()) {
 
     QWidget* centralWidget = new QWidget(this);
-    QVBoxLayout* layout = new QVBoxLayout(centralWidget);
-
-    auto chartView = new QChartView(diagram->getChart());
-    layout->addWidget(chartView);
-    layout->addWidget(display);
+    layout = new QVBoxLayout(centralWidget);
 
     setCentralWidget(centralWidget);
 
-    connect(network, &NetworkManager::newSampleReceived, this, &MainWindow::handleNewSample);
+    configPanel = new ConfigurationPanel(this);
+    configDock = new QDockWidget("Konfiguracja", this);
+    configDock->setWidget(configPanel);
+    addDockWidget(Qt::LeftDockWidgetArea, configDock);
 
-    network->startSimulation(); // startujemy symulację
+    connect(configPanel, &ConfigurationPanel::addDiagramRequested, this, &MainWindow::addDiagram);
+    connect(configPanel, &ConfigurationPanel::addDisplayRequested, this, &MainWindow::addDisplay);
+    connect(configPanel, &ConfigurationPanel::removeSelectedRequested, this, &MainWindow::removeElement);
+
+    network->startSimulation();
 }
 
 MainWindow::~MainWindow() {
@@ -37,7 +42,62 @@ void MainWindow::handleNewSample(double sample) {
     logger->logSample(processed);
 
     auto samples = buffer->getSamples();
-    diagram->updateData(samples);
 
-    display->setValue(processed);
+    // Aktualizujemy WSZYSTKIE wykresy
+    for (auto* diag : diagrams) {
+        diag->updateData(samples);
+    }
+
+    // Aktualizujemy WSZYSTKIE wyświetlacze
+    for (auto* disp : displays) {
+        disp->setValue(processed);
+    }
 }
+
+void MainWindow::addDiagram() {
+    auto diagram = new LineDiagram();
+    auto chartView = new QChartView(diagram->getChart());
+    chartView->setMinimumHeight(200);
+    layout->addWidget(chartView);
+
+    dynamicWidgets.append(chartView);
+    diagrams.append(diagram);
+}
+
+
+void MainWindow::addDisplay() {
+    auto display = new TextDisplay(this);
+    display->setMinimumHeight(50);
+    layout->addWidget(display);
+
+    dynamicWidgets.append(display);
+    displays.append(display);
+}
+
+void MainWindow::removeElement(int index) {
+    if (index >= 0 && index < dynamicWidgets.size()) {
+        QWidget* widget = dynamicWidgets.at(index);
+        layout->removeWidget(widget);
+
+        Diagram* d = qobject_cast<Diagram*>(widget);
+        if (d) {
+            diagrams.removeOne(d);
+        }
+
+        TextDisplay* textDisp = qobject_cast<TextDisplay*>(widget);
+        if (textDisp) {
+            displays.removeOne(textDisp);
+        }
+
+        BarDisplay* barDisp = qobject_cast<BarDisplay*>(widget);
+        if (barDisp) {
+            displays.removeOne(barDisp);
+        }
+
+
+        widget->deleteLater();
+        dynamicWidgets.removeAt(index);
+    }
+}
+
+

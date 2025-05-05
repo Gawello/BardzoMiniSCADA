@@ -1,8 +1,9 @@
 #pragma once
 
 #include <QString>
+#include <QObject>
 
-class DataDisplay {
+class DataDisplay{
 public:
     virtual ~DataDisplay() = default;
 

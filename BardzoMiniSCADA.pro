@@ -13,6 +13,7 @@ TARGET = BardzoMiniSCADA
 TEMPLATE = app
 
 SOURCES += \
+    gui/ConfigurationPanel.cpp \
     main.cpp \
     core/DataBuffer.cpp \
     core/NetworkManager.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     core/NetworkManager.h \
     core/DataLogger.h \
     core/DataProcessor.h \
+    gui/ConfigurationPanel.h \
     gui/Diagram.h \
     gui/LineDiagram.h \
     gui/PointDiagram.h \

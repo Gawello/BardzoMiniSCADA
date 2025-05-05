@@ -19,10 +19,10 @@ class QChartView;
 }
 QT_END_NAMESPACE
 
-class Diagram {
+class Diagram : public QObject {
+    Q_OBJECT
 public:
     virtual ~Diagram() = default;
-
     virtual QChart* getChart() const = 0;
     virtual void updateData(const std::vector<double>& samples) = 0;
 };
