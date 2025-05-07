@@ -10,6 +10,7 @@ class ConfigurationPanel : public QWidget {
 
 public:
     explicit ConfigurationPanel(QWidget* parent = nullptr);
+    void removeItemAt(int index);
 
 signals:
     void addDiagramRequested(const QString& type);

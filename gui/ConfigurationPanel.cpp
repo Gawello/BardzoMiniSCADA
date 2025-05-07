@@ -62,3 +62,8 @@ void ConfigurationPanel::onRemove() {
     }
 }
 
+void ConfigurationPanel::removeItemAt(int index) {
+    if (index >= 0 && index < itemList->count()) {
+        delete itemList->takeItem(index);
+    }
+}

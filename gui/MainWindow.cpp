@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(configPanel, &ConfigurationPanel::elementConfigureRequested, this, &MainWindow::configureElement);
     connect(configPanel, &ConfigurationPanel::saveConfigRequested, this, &MainWindow::saveConfig);
     connect(configPanel, &ConfigurationPanel::loadConfigRequested, this, &MainWindow::loadConfig);
+    connect(network, &NetworkManager::newSampleReceived, this, &MainWindow::handleNewSample);
 
     loadConfiguration("config.json");
     network->startSimulation();
@@ -107,6 +108,7 @@ void MainWindow::removeElement(int index) {
 
         widget->deleteLater();
         dynamicWidgets.removeAt(index);
+        configPanel->removeItemAt(index);
     }
 }
 
