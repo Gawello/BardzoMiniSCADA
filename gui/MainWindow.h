@@ -9,6 +9,8 @@
 #include "TextDisplay.h"
 #include "ConfigurationPanel.h"
 #include "BarDisplay.h"
+#include "ConfigManager.h"
+#include <QCloseEvent>
 #include <QDockWidget>
 
 QT_BEGIN_NAMESPACE
@@ -30,6 +32,8 @@ private:
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void loadConfiguration(const QString& filename);
+    void closeEvent(QCloseEvent* event);
 
 private slots:
     void handleNewSample(double sample);
@@ -37,6 +41,8 @@ private slots:
     void addDisplay();
     void removeElement(int index);
     void configureElement(int index);
+    void saveConfig();
+    void loadConfig();
 
 private:
     NetworkManager* network;

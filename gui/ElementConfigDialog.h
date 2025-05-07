@@ -5,6 +5,7 @@
 #include <QDoubleSpinBox>
 #include <QCheckBox>
 #include <QDialogButtonBox>
+#include <QColor>
 
 class ElementConfigDialog : public QDialog {
     Q_OBJECT
@@ -26,4 +27,11 @@ private:
     QDoubleSpinBox* minWarningSpin;
     QDoubleSpinBox* maxWarningSpin;
     QDialogButtonBox* buttons;
+    QPushButton* colorButton;
+    QColor currentColor;
+
+public:
+    void enableColorControl(bool enable);
+    void setColor(const QColor& color);
+    QColor getColor() const;
 };

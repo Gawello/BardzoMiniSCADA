@@ -16,6 +16,8 @@ signals:
     void addDisplayRequested();
     void removeSelectedRequested(int index);
     void elementConfigureRequested(int index);
+    void saveConfigRequested();
+    void loadConfigRequested();
 
 private slots:
     void onAddDiagram();
@@ -27,4 +29,6 @@ private:
     QPushButton* addDiagramButton;
     QPushButton* addDisplayButton;
     QPushButton* removeButton;
+    QPushButton* saveButton;
+    QPushButton* loadButton;
 };

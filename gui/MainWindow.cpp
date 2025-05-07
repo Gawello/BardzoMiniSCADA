@@ -4,9 +4,9 @@
 #include "BarDiagram.h"
 #include "ElementConfigDialog.h"
 #include "TextDisplay.h"
+#include "BarDisplay.h"
 #include <QtCharts/QChartView>
 #include <QVBoxLayout>
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -30,7 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(configPanel, &ConfigurationPanel::addDisplayRequested, this, &MainWindow::addDisplay);
     connect(configPanel, &ConfigurationPanel::removeSelectedRequested, this, &MainWindow::removeElement);
     connect(configPanel, &ConfigurationPanel::elementConfigureRequested, this, &MainWindow::configureElement);
+    connect(configPanel, &ConfigurationPanel::saveConfigRequested, this, &MainWindow::saveConfig);
+    connect(configPanel, &ConfigurationPanel::loadConfigRequested, this, &MainWindow::loadConfig);
 
+    loadConfiguration("config.json");
     network->startSimulation();
 }
 
@@ -38,7 +41,6 @@ MainWindow::~MainWindow() {
     delete buffer;
     delete logger;
     delete processor;
-    delete diagram;
 }
 
 void MainWindow::handleNewSample(double sample) {
@@ -49,27 +51,22 @@ void MainWindow::handleNewSample(double sample) {
 
     auto samples = buffer->getSamples();
 
-    // Aktualizujemy WSZYSTKIE wykresy
-    for (auto* diag : diagrams) {
+    for (auto* diag : diagrams)
         diag->updateData(samples);
-    }
 
-    // Aktualizujemy WSZYSTKIE wyświetlacze
-    for (auto* disp : displays) {
+    for (auto* disp : displays)
         disp->setValue(processed);
-    }
 }
 
 void MainWindow::addDiagram(const QString& type) {
     Diagram* diagram = nullptr;
 
-    if (type == "LineDiagram") {
+    if (type == "LineDiagram")
         diagram = new LineDiagram();
-    } else if (type == "PointDiagram") {
+    else if (type == "PointDiagram")
         diagram = new PointDiagram();
-    } else if (type == "BarDiagram") {
+    else if (type == "BarDiagram")
         diagram = new BarDiagram();
-    }
 
     if (!diagram)
         return;
@@ -81,8 +78,6 @@ void MainWindow::addDiagram(const QString& type) {
     dynamicWidgets.append(chartView);
     diagrams.append(diagram);
 }
-
-
 
 void MainWindow::addDisplay() {
     auto display = new TextDisplay(this);
@@ -99,54 +94,58 @@ void MainWindow::removeElement(int index) {
         layout->removeWidget(widget);
 
         Diagram* d = qobject_cast<Diagram*>(widget);
-        if (d) {
+        if (d)
             diagrams.removeOne(d);
-        }
 
         TextDisplay* textDisp = qobject_cast<TextDisplay*>(widget);
-        if (textDisp) {
+        if (textDisp)
             displays.removeOne(textDisp);
-        }
 
         BarDisplay* barDisp = qobject_cast<BarDisplay*>(widget);
-        if (barDisp) {
+        if (barDisp)
             displays.removeOne(barDisp);
-        }
-
 
         widget->deleteLater();
         dynamicWidgets.removeAt(index);
     }
 }
 
-
 void MainWindow::configureElement(int index) {
     if (index < 0 || index >= dynamicWidgets.size())
         return;
 
     QWidget* widget = dynamicWidgets.at(index);
-
     ElementConfigDialog dialog(this);
 
-    // Wykresy (Diagram)
     Diagram* diagram = qobject_cast<Diagram*>(widget);
     if (diagram) {
         dialog.setTitle(diagram->getChart()->title());
         dialog.enableWarningControls(false);
+
+        LineDiagram* line = qobject_cast<LineDiagram*>(widget);
+        if (line) {
+            auto lineSeries = qobject_cast<QLineSeries*>(line->getChart()->series().first());
+            if (lineSeries) {
+                dialog.setColor(lineSeries->pen().color());
+            }
+            dialog.enableColorControl(true);
+        }
+
         if (dialog.exec() == QDialog::Accepted) {
             diagram->getChart()->setTitle(dialog.getTitle());
+
+            if (line)
+                line->setColor(dialog.getColor());
         }
         return;
     }
 
-    // Wyświetlacze (TextDisplay lub BarDisplay)
     TextDisplay* textDisp = qobject_cast<TextDisplay*>(widget);
     BarDisplay* barDisp = qobject_cast<BarDisplay*>(widget);
-    if (textDisp || barDisp) {
 
+    if (textDisp || barDisp) {
         if (textDisp)
             dialog.setWarningLimits(textDisp->getWarningMin(), textDisp->getWarningMax());
-
         if (barDisp)
             dialog.setWarningLimits(barDisp->getWarningMin(), barDisp->getWarningMax());
 
@@ -161,10 +160,66 @@ void MainWindow::configureElement(int index) {
 
             if (textDisp)
                 textDisp->setWarningLimits(dialog.getWarningMin(), dialog.getWarningMax());
-
             if (barDisp)
                 barDisp->setWarningLimits(dialog.getWarningMin(), dialog.getWarningMax());
         }
     }
 }
+void MainWindow::loadConfiguration(const QString& filename) {
+    auto elements = ConfigManager::load(filename);
 
+    for (const auto& obj : elements) {
+        QString type = obj["type"].toString();
+
+        if (type.contains("Diagram")) {
+            addDiagram(type);
+
+            Diagram* diagram = diagrams.last();
+            diagram->getChart()->setTitle(obj["title"].toString());
+
+            if (type == "LineDiagram") {
+                auto* line = dynamic_cast<LineDiagram*>(diagram);
+                if (line)
+                    line->setColor(QColor(obj["color"].toString()));
+            }
+        } else if (type == "TextDisplay") {
+            auto* disp = new TextDisplay(this);
+            disp->setText(obj["title"].toString());
+            disp->setWarningLimits(obj["minWarning"].toDouble(), obj["maxWarning"].toDouble());
+            layout->addWidget(disp);
+            dynamicWidgets.append(disp);
+            displays.append(disp);
+        } else if (type == "BarDisplay") {
+            auto* disp = new BarDisplay(this);
+            disp->setFormat(obj["title"].toString());
+            disp->setWarningLimits(obj["minWarning"].toDouble(), obj["maxWarning"].toDouble());
+            layout->addWidget(disp);
+            dynamicWidgets.append(disp);
+            displays.append(disp);
+        }
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent* event) {
+    ConfigManager::save("config.json", dynamicWidgets);
+    event->accept();
+}
+
+void MainWindow::saveConfig() {
+    ConfigManager::save("config.json", dynamicWidgets);
+}
+
+void MainWindow::loadConfig() {
+    // Usuń wszystkie aktualne elementy
+    for (auto* widget : dynamicWidgets) {
+        layout->removeWidget(widget);
+        widget->deleteLater();
+    }
+
+    dynamicWidgets.clear();
+    diagrams.clear();
+    displays.clear();
+
+    // Wczytaj z config.json
+    loadConfiguration("config.json");
+}

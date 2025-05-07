@@ -1,6 +1,8 @@
 #include "ElementConfigDialog.h"
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QPushButton>
+#include <QColorDialog>
 
 ElementConfigDialog::ElementConfigDialog(QWidget* parent)
     : QDialog(parent) {
@@ -25,6 +27,18 @@ ElementConfigDialog::ElementConfigDialog(QWidget* parent)
 
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    colorButton = new QPushButton("Wybierz kolor", this);
+    layout->addWidget(colorButton);
+    colorButton->setEnabled(false);
+
+    connect(colorButton, &QPushButton::clicked, this, [this]() {
+        QColor color = QColorDialog::getColor(currentColor, this, "Wybierz kolor linii");
+        if (color.isValid()) {
+            currentColor = color;
+            colorButton->setText(color.name());
+        }
+    });
+
 }
 
 void ElementConfigDialog::setTitle(const QString& title) {
@@ -51,4 +65,16 @@ double ElementConfigDialog::getWarningMax() const {
 void ElementConfigDialog::enableWarningControls(bool enable) {
     minWarningSpin->setEnabled(enable);
     maxWarningSpin->setEnabled(enable);
+}
+void ElementConfigDialog::enableColorControl(bool enable) {
+    colorButton->setEnabled(enable);
+}
+
+void ElementConfigDialog::setColor(const QColor& color) {
+    currentColor = color;
+    colorButton->setText(color.name());
+}
+
+QColor ElementConfigDialog::getColor() const {
+    return currentColor;
 }

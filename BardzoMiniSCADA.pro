@@ -13,6 +13,7 @@ TARGET = BardzoMiniSCADA
 TEMPLATE = app
 
 SOURCES += \
+    core/ConfigManager.cpp \
     core/DisplayLogic.cpp \
     gui/ConfigurationPanel.cpp \
     gui/ElementConfigDialog.cpp \
@@ -32,6 +33,7 @@ SOURCES += \
     simulation/DataSimulator.cpp
 
 HEADERS += \
+    core/ConfigManager.h \
     core/DataBuffer.h \
     core/DisplayLogic.h \
     core/NetworkManager.h \

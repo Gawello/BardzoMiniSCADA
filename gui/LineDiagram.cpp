@@ -24,3 +24,9 @@ void LineDiagram::updateData(const std::vector<double>& samples) {
     chart->axes(Qt::Horizontal).first()->setRange(0.0, static_cast<double>(samples.size()));
     chart->axes(Qt::Vertical).first()->setRange(*std::min_element(samples.begin(), samples.end()), *std::max_element(samples.begin(), samples.end()));
 }
+
+void LineDiagram::setColor(const QColor& color) {
+    QPen p = series->pen();
+    p.setColor(color);
+    series->setPen(p);
+}

@@ -14,6 +14,14 @@ ConfigurationPanel::ConfigurationPanel(QWidget* parent)
     layout->addWidget(addDiagramButton);
     layout->addWidget(addDisplayButton);
     layout->addWidget(removeButton);
+    saveButton = new QPushButton("Zapisz konfigurację", this);
+    layout->addWidget(saveButton);
+    connect(saveButton, &QPushButton::clicked, this, &ConfigurationPanel::saveConfigRequested);
+
+    loadButton = new QPushButton("Wczytaj konfigurację", this);
+    layout->addWidget(loadButton);
+    connect(loadButton, &QPushButton::clicked, this, &ConfigurationPanel::loadConfigRequested);
+
 
     setLayout(layout);
 
